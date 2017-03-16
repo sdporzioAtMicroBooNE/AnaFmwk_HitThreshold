@@ -23,9 +23,13 @@ def Pandafy(fileName, tree):
     df = pd.DataFrame(rnp.root2array(fileName,tree))
     return df
 
-def ConcatenateRoot(inDir,tree):
+def ConcatenateRoot(inDir,tree,nFiles=-1):
     if not inDir[-1]=='/': inDir+='/'
-    fileNames = [inDir+fileName for fileName in os.listdir(inDir) if '.root' in fileName[-5:]]
+    fileNames = []
+    if nFiles==-1:
+        fileNames = [inDir+fileName for fileName in os.listdir(inDir) if '.root' in fileName[-5:]]
+    else:
+        fileNames = [inDir+fileName for fileName in os.listdir(inDir)[:nFiles] if '.root' in fileName[-5:]]
     df_v = [Pandafy(fileName,tree) for fileName in fileNames]
     df = pd.concat(df_v,ignore_index=True)
     af.End()
