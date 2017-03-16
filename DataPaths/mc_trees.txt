@@ -1,0 +1,10 @@
+/pnfs/uboone/scratch/users/sporzio/HitThreshold/hitThresTest_MC/reco/14926668_0/histoFile_Tracy_AnaReco_1.0_1.0_1.0.root
+/pnfs/uboone/scratch/users/sporzio/HitThreshold/hitThresTest_MC/reco/14926668_1/histoFile_Tracy_AnaReco_1.0_1.0_1.0.root
+/pnfs/uboone/scratch/users/sporzio/HitThreshold/hitThresTest_MC/reco/14926668_2/histoFile_Tracy_AnaReco_1.0_1.0_1.0.root
+/pnfs/uboone/scratch/users/sporzio/HitThreshold/hitThresTest_MC/reco/14926668_3/histoFile_Tracy_AnaReco_1.0_1.0_1.0.root
+/pnfs/uboone/scratch/users/sporzio/HitThreshold/hitThresTest_MC/reco/14926668_4/histoFile_Tracy_AnaReco_1.0_1.0_1.0.root
+/pnfs/uboone/scratch/users/sporzio/HitThreshold/hitThresTest_MC/reco/14926668_5/histoFile_Tracy_AnaReco_1.0_1.0_1.0.root
+/pnfs/uboone/scratch/users/sporzio/HitThreshold/hitThresTest_MC/reco/14926668_6/histoFile_Tracy_AnaReco_1.0_1.0_1.0.root
+/pnfs/uboone/scratch/users/sporzio/HitThreshold/hitThresTest_MC/reco/14926668_7/histoFile_Tracy_AnaReco_1.0_1.0_1.0.root
+/pnfs/uboone/scratch/users/sporzio/HitThreshold/hitThresTest_MC/reco/14926668_8/histoFile_Tracy_AnaReco_1.0_1.0_1.0.root
+/pnfs/uboone/scratch/users/sporzio/HitThreshold/hitThresTest_MC/reco/14926668_9/histoFile_Tracy_AnaReco_1.0_1.0_1.0.root

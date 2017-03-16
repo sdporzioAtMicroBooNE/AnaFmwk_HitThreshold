@@ -1,0 +1,198 @@
+#include "services_microboone.fcl"
+#include "caldata_microboone.fcl"
+#include "calibration_microboone.fcl"
+
+#include "hitfindermodules_microboone.fcl"
+#include "cluster_microboone.fcl"
+#include "cosmicremovalmodules.fcl"
+#include "trackfindermodules_microboone.fcl"
+#include "pandoramodules_microboone.fcl"
+
+process_name: EVD
+
+services:
+{
+  TFileService:            { fileName: "histoFile_Tracy_AnaOnly_2.6_2.6_3.25.root" }
+  message:                 @local::microboone_message_services_prod_debug
+  Timing:                  {}
+  RandomNumberGenerator:   {} #ART native random number generator
+  channelstatusservice:    @local::microboone_channelstatus_service
+  			   @table::microboone_services_reco
+}
+
+# Define the services
+
+#Look at the input files
+source:
+{
+  module_type: RootInput
+  maxEvents:   -1       # Number of events to create
+}
+
+# Define and configure some modules to do work on each event.
+# First modules are defined; they are scheduled later.
+# Modules are grouped by type.
+physics:
+{
+
+ producers:
+ {
+   ### raw digit filter
+   digitfilter:            @local::microboone_rawdigitfilter
+#   digitfilter:            @local::microboone_noisefilter
+
+   ### calwire producers
+   caldata:                 @local::microboone_calroi
+
+   ### hit-finder producers
+   gaushit:                      @local::microboone_gaushitfinder
+
+   ### pandora cosmic pfparticle
+   pandoraCosmicKHitPFPart:      @local::microboone_cosmicpfparticletagger
+   pandoraCosmicKHitRemoval:     @local::microboone_crhitremoval
+   pandoraCosmicKHit:            @local::microboone_track3Dkalmanhit
+
+   ### pandora cosmic pass
+   pandoraCosmic:                @local::microboone_pandora
+
+   ### pandora core modules
+   pandoraNu:                    @local::microboone_pandora
+   pandoraNuKHit:                @local::microboone_track3Dkalmanhit
+
+   ### Allow for rerunning hit removal for debugging
+   crhitremoval:                 @local::microboone_crhitremoval
+ }
+
+ analyzers:
+ {
+   TrackHitAna:  {
+                   module_type:             TrackHitAna
+		   HitModuleLabel:          "gaushit"
+		   PFParticleProducerLabel: "pandoraCosmic"
+		   TrackProducerLabel:      "pandoraCosmicKHit"
+                 }
+ }
+
+ reco: [
+#         digitfilter,
+#         caldata,
+#         gaushit,
+#	 pandoraCosmic,
+#	 pandoraCosmicKHit
+#         pandoraCosmicKHitPFPart,
+#         pandoraCosmicKHitRemoval,
+#         pandoraNu,
+#         pandoraNuKHit
+       ]
+
+ #list the modules for this path, order matters, filters reject all following items
+ ana: [ TrackHitAna ]
+
+ #define the output stream, there could be more than one if using filters
+ stream1:  [ out1 ]
+
+ #end_path are things that do not modify art::Event, includes analyzers
+ #and output modules. all items here can be run simultaneously
+ end_paths: [ana]
+}
+
+outputs:{
+ out1:
+ {
+   module_type: RootOutput
+   fileName:    "%ifb_%tc_pandora.root"
+   dataTier:    "detector-simulated"
+   saveMemoryObjectThreshold: 0
+   compressionLevel: 1
+ }
+}
+
+
+### Here, we overwrite ALL module labels with the ones defined above.
+
+#services.ChannelStatusService.ChannelStatusProvider.UseDB:                                false
+#services.DetPedestalService.DetPedestalRetrievalAlg.UseDB:                                false
+
+# Adjust the window/offset for the reduced total frame size (9600 -> 6400 ticks)
+services.DetectorPropertiesService.NumberTimeSamples:                                     6400
+services.DetectorPropertiesService.ReadOutWindowSize:                                     6400
+services.DetectorClocksService.InheritClockConfig:                                        false
+services.DetectorClocksService.TriggerOffsetTPC:                                          -0.400e3
+
+#services.SignalShapingServiceMicroBooNE.StretchFullResponse: true
+
+physics.producers.digitfilter.TruncateTicks:                                              true
+#physics.producers.digitfilter.ProcessNoise:                                               false
+#physics.producers.digitfilter.FFTAlg.TransformViewVec:                                    [false,false,false]
+#physics.producers.digitfilter.FFTAlg.ZigZagCorrectVec:                                    [false,false,false]
+
+physics.producers.caldata.DigitModuleLabel:                                               "digitfilter"
+
+#physics.producers.gaushit.MinSig:                                                         [ 2.0, 2.0, 2.5]  # Monte Carlo?
+physics.producers.gaushit.MinSig:                                                         [ 2.6, 2.6, 3.25]  # data
+physics.producers.gaushit.MaxMultiHit:                                                    3
+
+physics.producers.crhitremoval.CosmicProducerLabels:                                      ["pandoraCosmicKHitPFPart"]
+physics.producers.crhitremoval.PFPrticleProducerLabel:                                    "pandoraCosmic"
+physics.producers.crhitremoval.TrackProducerLabel:                                        "pandoraCosmicKHit"
+
+physics.producers.pandoraCosmic.GeantModuleLabel:                                         "largeant"
+physics.producers.pandoraCosmic.HitFinderModuleLabel:                                     "gaushit"
+physics.producers.pandoraCosmic.ConfigFile:                                               "PandoraSettings_MicroBooNE_Cosmic.xml"
+
+physics.producers.pandoraCosmicKHit.UseClusterHits:                                       false
+physics.producers.pandoraCosmicKHit.UsePFParticleHits:                                    true
+physics.producers.pandoraCosmicKHit.Track3DKalmanHitAlg.SelfSeed:                         true
+physics.producers.pandoraCosmicKHit.ClusterModuleLabel:                                   "pandoraCosmic"
+physics.producers.pandoraCosmicKHit.PFParticleModuleLabel:                                "pandoraCosmic"
+
+physics.producers.pandoraCosmicKHitPFPart.PFParticleModuleLabel:                          "pandoraCosmic"
+physics.producers.pandoraCosmicKHitPFPart.TrackModuleLabel:                               "pandoraCosmicKHit"
+#physics.producers.pandoraCosmicKHitPFPart.TPCXBoundary:                                  10
+#physics.producers.pandoraCosmicKHitPFPart.TPCYBoundary:                                  10
+#physics.producers.pandoraCosmicKHitPFPart.TPCZBoundary:                                  10
+physics.producers.pandoraCosmicKHitPFPart.EndTickPadding:                                 75
+
+physics.producers.pandoraCosmicKHitRemoval.HitProducerLabel:                              "gaushit"
+physics.producers.pandoraCosmicKHitRemoval.CosmicProducerLabels:                          ["pandoraCosmicKHitPFPart","trackkalmanhittag"]
+physics.producers.pandoraCosmicKHitRemoval.PFParticleProducerLabel:                       "pandoraCosmic"
+physics.producers.pandoraCosmicKHitRemoval.TrackProducerLabels:                           ["pandoraCosmicKHit","trackkalmanhit"]
+physics.producers.pandoraCosmicKHitRemoval.AssnProducerLabels:                            ["pandoraCosmicKHit","pandoraTrackPFPartMatch"]
+physics.producers.pandoraCosmicKHitRemoval.EndTickPadding:                                75
+
+physics.producers.pandoraNu.GeantModuleLabel:                                             "largeant"
+physics.producers.pandoraNu.HitFinderModuleLabel:                                         "pandoraCosmicKHitRemoval"
+physics.producers.pandoraNu.ConfigFile:                                                   "PandoraSettings_MicroBooNE_Neutrino.xml"
+
+physics.producers.pandoraNuKHit.UseClusterHits:                                           false
+physics.producers.pandoraNuKHit.UsePFParticleHits:                                        true
+physics.producers.pandoraNuKHit.ClusterModuleLabel:                                       "pandoraNu"
+physics.producers.pandoraNuKHit.PFParticleModuleLabel:                                    "pandoraNu"
+physics.producers.pandoraNuKHit.HitFinderModuleLabel:                                     "pandoraCosmicKHitRemoval"
+physics.producers.pandoraNuKHit.Track3DKalmanHitAlg.SelfSeed:                             true
+#physics.producers.pandoraNuKHit.Track3DKalmanHitAlg.SelfSeed:                             false
+#physics.producers.pandoraNuKHit.Track3DKalmanHitAlg.SeedFinderAlg.Allow2DSeeds:           true
+#physics.producers.pandoraNuKHit.Track3DKalmanHitAlg.SeedFinderAlg.SpacePointAlg.MinViews: 2
+
+services.message.destinations :
+{
+  STDCOUT:
+  {
+     type:      "cout"      #tells the message service to output this destination to cout
+     threshold: "DEBUG"     #tells the message service that this destination applies to WARNING and higher level messages
+     append:     true       #says to append all messages to the output
+     categories:
+     {
+       RawDigitFilterUBooNE:
+       {
+         limit: -1
+         reportEvery: 1
+       }
+       default:
+       {
+         limit: 0  #don't print anything at the infomsg level except the explicitly named categories
+         reportEvery: 0
+       }
+     }
+  }
+}
