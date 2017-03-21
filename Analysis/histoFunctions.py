@@ -33,12 +33,12 @@ def Hist2d2Array(histo):
             array[2][i][j] = histo.GetBinContent(i+1,j+1)
     return array
 
-def Plot2dHitsHisto(inDir,jobType,histoName='PHVsWidth'):
+def Plot2dHitsHisto(inDir,jobType,histoName='PHVsWidth',zMax='None'):
     # Settings
     col = ['r','g','b']
     titles = ['U plane','V plane','Y plane']
-    subs = ['FitTrackHits','PFPartHits','AllHits']
-    subNames = ['Track Hits','PFPart Hits','All (other) Hits']
+    subs = ['FitTrackHits','AllHits']
+    subNames = ['Track Hits','All (other) Hits']
     xlab = 'PH [ADC]'
     ylab = 'Width [TDC]'
 
@@ -80,6 +80,7 @@ def Plot2dHitsHisto(inDir,jobType,histoName='PHVsWidth'):
                 plt.axvline(2.6,color='black',lw=3,ls='--')
             plt.xlabel(xlab)
             plt.xlim(1,20.)
+            if zMax!='None': plt.clim(0,zmax)
             plt.colorbar()
         fig[0].set_ylabel(ylab)
         plt.show()
